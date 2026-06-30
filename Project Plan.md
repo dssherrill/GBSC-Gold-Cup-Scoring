@@ -43,8 +43,9 @@ over the submission pipeline and a clean web-native leaderboard.
   Southbridge), finish cylinder.
 - Handicapped scoring ("Herold Handicapping" — see open question below on whether this
   is just the standard SSA index list).
-- Each pilot may submit any number of flights through the season; **best 3 flights**
-  count toward total score.
+- Each year starts a new season.
+- Each pilot may submit any number of flights through the season.
+- **best 3 flights of the season** count toward the pilot's total score for the season.
 - Scoring is **season-relative**, not fixed-scale:
   - The fastest handicapped speed of the season so far = 1,000 points. All other
     completed-task flights are scored as a percentage of that.
@@ -56,14 +57,23 @@ over the submission pipeline and a clean web-native leaderboard.
     season-best, submitting a new flight can change the "anchor" and require
     recalculating points for every other flight already in the system, not just the new
     one. The scoring engine must treat this as the normal case, not an edge case.
+- Results for past seasons will be viewable in the same way as the current season.
 - GPS traces must be in IGC format (or converted to it). This is the only data input
   format we need to support.
+- Digital signatures in IGC files will not be verified since Gold Cup rules state that
+  IGC files "need not be secure".  That said, validation would be easy using the web 
+  server at http://vali.fai-civl.org/webservice.html
 - A pilot need not fly the same glider every flight, and need not own the glider flown
   (club gliders are encouraged). This means **glider/handicap selection happens per
   flight, not per pilot** — there's no fixed "pilot's glider" to default to.
 
 Action item: re-read the actual rules page closely when implementing the points formula
 — summarized from memory of the discussion above, not re-verified line by line here.
+
+## Data management
+- The original IGC files are retained.
+- The DB schema includes a column to identify the contest season, which is always 
+  the year in which the flight occurred.
 
 ## Handicap data
 
@@ -74,6 +84,11 @@ https://www.soaringspot.com/uploads/048/4848/files/Handicap_list_2025.pdf
 - This is a glider **model** → index lookup table (not per-pilot), with separate
   "without ballast" and "with ballast" index numbers per glider, plus wingspan and MTOW.
 - Some airframes (e.g. ASK-21) have **separate dual vs. solo index rows**.
+- Some airframes can be flown with different wing lengths. By far the most common case
+  is 15-meter or 18-meter wingtip extensions.  The handicap depends on the wing length.
+  Each variant must have a separate entry in the handicap table.  When submitting an IGC
+  file, the pilot must confirm both the glider and the variant flown, both of which are typically evident in
+  the IGC file.
 
 ### Working assumption (NOT YET CONFIRMED — verify with current Gold Cup scorer)
 
@@ -127,14 +142,44 @@ Relevant fields:
    wrong or missing. This is the single human-in-the-loop checkpoint for the whole
    pipeline — no separate manual review step needed after the fact.
 
+## User authentication
+
+A login account is required to submit flights. Authenticated pilots can submit and
+modify their own flights only; admins can add, modify, delete, and void all flights.
+
+**Registration flow:**
+- The app maintains a pre-loaded table of known club member email addresses.
+- Self-service registration: pilot enters their email address on the registration page.
+- A time-limited magic link is emailed to that address to complete registration
+  (set display name and password). No temporary passwords — the magic link is the
+  one-time credential.
+- Email with an address **not** in the known-members table is allowed to register,
+  but the app immediately sends a notification email to all admins flagging the
+  unknown address. The account is active and usable right away; the admin
+  notification is informational, not a gate. This minimizes friction for legitimate
+  members whose email wasn't pre-loaded, while keeping admins aware.
+
+**Email infrastructure:**
+- Outbound email (magic links, admin notifications) is sent via a transactional
+  email service (SendGrid, Mailgun, or Postmark — to be chosen at build time)
+  configured via Railway environment variables. No SMTP credentials in source code.
+
+**Admin tasks related to the member email list:**
+- Add new members' email addresses when they join the club.
+- Update an address when a member's email changes.
+- Remove departed members (prevents future registrations from those addresses, but
+  does not affect existing accounts).
+- Review admin-notification emails for unknown-address registrations and deactivate
+  any accounts that appear illegitimate.
+
 ## Architecture decision
 
 **Standalone Python web app, deployed on Railway, NOT a Drupal module.**
 
 Rationale:
-- David expects friction/gatekeeping from whoever currently controls soargbsc.net
-  (Drupal). Building standalone means the leaderboard can launch and be useful
-  independent of ever getting Drupal access.
+- David does not have full access to soargbsc.net (Drupal). Building standalone 
+  means the leaderboard can launch and be useful independent of ever getting Drupal 
+  access.
 - David already runs other Python projects on Railway — matches existing operational
   pattern, no new platform to learn.
 - Python's ecosystem is well-suited to the actual hard part (IGC parsing, geodesic /
@@ -164,32 +209,29 @@ Rationale:
    - For split-row gliders (ASK-21 dual vs. solo, and check the list for any others),
      which number does the club actually use today?
 2. **Re-verify the exact points formula** against the live rules page when implementing
-   — the non-completion scoring rule in particular ("500 points or 80% of lowest speed
-   points, whichever...") should be quoted/checked precisely, not relied on from this
-   summary.
+   — all rules should be quoted/checked precisely, not relied on from this summary.
 3. **Club fleet table** — need tail-number → canonical glider type mapping for GBSC's own
    gliders, to support Tier 1 of the glider resolution strategy. Does not yet exist;
    needs to be built (probably a short hand-maintained list).
-4. **Pilot/member identity** — how do submitters get matched to a club-member account?
-   IGC header has `HFPLTPILOTINCHARGE` (free-text pilot name) but no stable ID. Likely
-   needs its own login/account system on the standalone app rather than relying on the
-   IGC file alone.
-5. **Recalculation strategy when the season-best "anchor" flight changes** — discussed
+4. **Recalculation strategy when the season-best "anchor" flight changes** — discussed
    but not finally decided. Leaning toward "recompute all stored flights live on every
    new submission" since contest scale (single club, one season) makes this cheap; batch
-   recompute is the fallback if that's ever untrue.
+   recompute is the fallback if that's ever untrue.  Alternatively, keep raw scores for
+   individual flights and only use 1000-point relative scoring for each pilot's net 
+   score.
 
 ## Build order (proposed, not started)
 
-1. Handicap lookup table — extract the PDF into clean CSV/JSON; normalize glider-type
+1. Stand up the Railway app skeleton + DB schema
+2. Handicap lookup table — extract the PDF into clean CSV/JSON; normalize glider-type
    strings for fuzzy matching; flag dual/solo-split rows for club confirmation.
-2. IGC parser — header records (`HFGTY`, `HFGID`, `HFDTE`, pilot) + B-records (lat/lon/
+3. IGC parser — header records (`HFGTY`, `HFGID`, `HFDTE`, pilot) + B-records (lat/lon/
    alt/time fixes).
-3. Turn-area task scoring geometry — start cylinder, two turn areas, finish cylinder,
+4. Turn-area task scoring geometry — start cylinder, two turn areas, finish cylinder,
    min time/altitude rules, optimal-distance-within-area logic.
-4. Points engine — handicapped speed/distance → season-relative points; best-3-of-N per
-   pilot.
-5. Minimal web UI to exercise the above (upload IGC, see computed score) before building
+5. Points engine — handicapped speed/distance → season-relative points; best-3-of-N per
+   pilot 
+6. Minimal web UI to exercise the above (upload IGC, see computed score) before building
    out full accounts/leaderboard/Railway deployment.
 
 ## Source documents referenced

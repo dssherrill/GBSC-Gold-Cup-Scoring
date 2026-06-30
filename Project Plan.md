@@ -144,20 +144,24 @@ Relevant fields:
 
 ## User authentication
 
-A login account is required to submit flights. Authenticated pilots can submit and
-modify their own flights only; admins can add, modify, delete, and void all flights.
+A login account is required to submit flights. Authenticated pilots can only submit and
+modify their own flights; admins can add, modify, delete, and void all flights.
 
 **Registration flow:**
 - The app maintains a pre-loaded table of known club member email addresses.
-- Self-service registration: pilot enters their email address on the registration page.
-- A time-limited magic link is emailed to that address to complete registration
-  (set display name and password). No temporary passwords — the magic link is the
-  one-time credential.
-- Email with an address **not** in the known-members table is allowed to register,
-  but the app immediately sends a notification email to all admins flagging the
-  unknown address. The account is active and usable right away; the admin
-  notification is informational, not a gate. This minimizes friction for legitimate
-  members whose email wasn't pre-loaded, while keeping admins aware.
+- Self-service registration:
+  - Pilot enters their email address on the registration page.
+  - A time-limited magic link is emailed to that address to complete registration
+    (set display name and password). No temporary passwords — the magic link is the
+    one-time credential.
+  - If the email is **not** in the known-members table is allowed to register,
+    but the app immediately sends a notification email to all admins flagging the
+    unknown address. The account is active and usable right away; the admin
+    notification is informational, not a gate. This minimizes friction for legitimate
+    members whose email wasn't pre-loaded, while keeping admins aware but admin 
+    burden low.
+  - After completing registration, a pilot can get a new magic link by clicking
+    "Forgot password" on the login page.
 
 **Email infrastructure:**
 - Outbound email (magic links, admin notifications) is sent via a transactional
@@ -171,6 +175,15 @@ modify their own flights only; admins can add, modify, delete, and void all flig
   does not affect existing accounts).
 - Review admin-notification emails for unknown-address registrations and deactivate
   any accounts that appear illegitimate.
+
+**Session persistence:**
+- After login, a session cookie with a one-year lifetime is issued so pilots are not
+  prompted to re-authenticate between flights, which may be weeks apart.
+- The cookie is `HttpOnly` (not readable by JavaScript), `Secure` (HTTPS only), and
+  `SameSite=Lax`. Railway provides HTTPS automatically.
+- Sessions are stored server-side in Postgres so they can be explicitly invalidated
+  (pilot logs out, or admin deactivates an account). A new session token is issued on
+  each fresh login to prevent session fixation.
 
 ## Architecture decision
 

@@ -204,8 +204,7 @@ Rationale:
 - David does not have full access to soargbsc.net (Drupal). Building standalone 
   means the leaderboard can launch and be useful independent of ever getting Drupal 
   access.
-- David already runs other Python projects on Railway — matches existing operational
-  pattern, no new platform to learn.
+- David already runs other Python projects on Railway — no new platform to learn.
 - Python's ecosystem is well-suited to the actual hard part (IGC parsing, geodesic /
   turn-area geometry).
 - Drupal can't run Python natively anyway, so "integrate into Drupal later" was never

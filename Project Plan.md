@@ -150,7 +150,7 @@ modify their own flights; admins can add, modify, delete, and void all flights.
   - A time-limited magic link is emailed to that address to complete registration
     (set display name and password). No temporary passwords — the magic link is the
     one-time credential.
-  - If the email is **not** in the known-members table is allowed to register,
+  - Registration **is** allowed using an email that is **not** in the known-members table, 
     but the app immediately sends a notification email to all admins flagging the
     unknown address. The account is active and usable right away; the admin
     notification is informational, not a gate. This minimizes friction for legitimate

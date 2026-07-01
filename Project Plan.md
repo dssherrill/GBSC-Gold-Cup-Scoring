@@ -87,7 +87,7 @@ Source: SSA/Soaring Society handicap index list (2025), same list WinScore itsel
 with:
 https://www.soaringspot.com/uploads/048/4848/files/Handicap_list_2025.pdf
 
-- This is a glider **model** → handicap index lookup table (not per-pilot), with separate
+- This is a glider **model → handicap index** lookup table (not per-pilot), with separate
   "without ballast" and "with ballast" index numbers per glider, plus wingspan and MTOW.
 - Some gliders can be flown with different wing lengths. The most common case
   is 15-meter or 18-meter wingtip extensions.  The handicap depends on the wing length.

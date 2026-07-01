@@ -56,11 +56,12 @@ $$\text{HDistance} = \frac{\text{ScoredDistance}}{H}$$
 
 $$\text{HSpeed} = \frac{\text{ScoredSpeed}}{H}$$
 
-This equalizes performance across glider types: a faster glider (higher H)
+This equalizes performance across glider types: a faster glider (larger H)
 has its speed divided by a larger number.
 
 Per club practice, the "without ballast" index is used for all flights, and no
-adjustment is made for crew count or ballast state.
+adjustment is made for ballast state.
+When a 2-seat glider is flown, selecting the "solo" or "dual" variant of the glider selects the correct handicap for the crew size. 
 
 ---
 
@@ -88,9 +89,9 @@ actually reached.
       (Use great-circle / geodesic distances throughout.)
    c. The **scored turnpoint** for this area is the candidate fix that
       maximises this sum.
-4. Identify the valid finish fix: the first fix that is within the finish
-   cylinder and at or above the 2,500 ft MSL floor, occurring after the
-   last scored turnpoint.
+4. Identify the valid finish fix: the first fix on the that is within the finish
+   cylinder occurring after the last scored turnpoint.
+   The flight is disqualified if the finish fix is below the 2,500 ft MSL floor, 
 5. **Scored distance** = great-circle distance along the path:
    `Start → ScoredTP1 → ScoredTP2 → Finish`
 
@@ -125,6 +126,7 @@ $$\text{HSpeed} = \frac{\text{ScoredSpeed}}{H}$$
 | **Completion** | Pilot exited start cylinder, reached both turn areas (in either order), and entered the finish cylinder meeting the altitude requirement. |
 | **Qualifying non-completion** | Did not complete the task, but flew > 50 **handicapped** miles (`HDistance > 50`). |
 | **Non-qualifying non-completion** | Did not complete the task and flew ≤ 50 handicapped miles. Not scored (0 points). |
+| **Disqualified** | Entered the finish cylinder below 2500 ft MSL |
 
 ---
 
@@ -137,8 +139,7 @@ the current season.
 
 $$\boxed{P_{\text{speed}} = 1000 \times \frac{\text{HSpeed}}{\text{BestHSpeed}}}$$
 
-The pilot with `BestHSpeed` scores exactly 1,000 points. All other finishers
-score proportionally less.
+The flight with `BestHSpeed` scores exactly 1,000 points. All others score proportionally less.
 
 ### 7B. Distance points (qualifying non-completions)
 
@@ -156,7 +157,7 @@ $$\text{MaxDistPoints} = \max\!\left(500,\ 0.80 \times \text{LowestSpeedPoints}\
 
 $$\boxed{P_{\text{dist}} = \text{MaxDistPoints} \times \frac{\text{HDistance}}{\text{BestNonCompletionHDist}}}$$
 
-The pilot with the longest qualifying non-completion scores exactly
+The flight with the longest qualifying non-completion scores exactly
 `MaxDistPoints`; all others score proportionally less.
 
 **Edge case — no non-completion exceeds 50 handicapped miles (Rule 7B):**
@@ -182,7 +183,8 @@ on that flight's points:
 
 $$P_{\text{final}} = P \times 1.10$$
 
-This applies to both speed-point and distance-point flights.
+This applies only to speed points, since a non-completion
+does not qualify as a Gold Distance leg.
 
 **What counts as a "valid Gold Distance leg":**
 The FAI/SSA Gold Distance requirement is a flight of ≥ 300 km (186.4 mi).

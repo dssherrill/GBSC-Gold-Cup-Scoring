@@ -87,13 +87,14 @@ Source: SSA/Soaring Society handicap index list (2025), same list WinScore itsel
 with:
 https://www.soaringspot.com/uploads/048/4848/files/Handicap_list_2025.pdf
 
-- This is a glider **model → handicap index** lookup table (not per-pilot), with separate
-  "without ballast" and "with ballast" index numbers per glider, plus wingspan and MTOW.
+- This file is a glider **model → handicap index** lookup table, with separate
+  "without ballast" and "with ballast" index numbers per glider, plus wingspan and MTOW,
+  but Gold Cup scoring always uses the "without ballast" handicap.
 - Some gliders can be flown with different wing lengths. The most common case
   is 15-meter or 18-meter wingtip extensions.  The handicap depends on the wing length.
   Each variant must have a separate entry in the handicap table.  When submitting an IGC
-  file, the pilot must confirm both the glider and the variant flown, both of which are typically evident in
-  the IGC file.
+  file, the pilot must confirm both the glider and the variant flown, and typically both are
+  evident in the IGC file.
 - Similarly, some gliders (e.g. ASK-21) have separate handicap rows for solo and dual.
 
 The Gold Cup scoring does not adjust handicap for ballast but uses the "without ballast" handicap in all cases.

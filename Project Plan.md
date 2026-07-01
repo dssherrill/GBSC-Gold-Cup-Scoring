@@ -34,7 +34,7 @@ for this project.
   actually needs.
 
 **Decision: reimplement the Gold Cup scoring rules directly in our own code.** The rules
-are genuinely simpler than a sanctioned contest (see below), and this gives full control
+are far simpler than a sanctioned contest (see below), and this gives full control
 over the submission pipeline and a clean web-native leaderboard.
 
 ## Gold Cup contest rules (from soargbsc.net)
@@ -44,7 +44,7 @@ over the submission pipeline and a clean web-native leaderboard.
 - Handicapped scoring using the SSA handicap data from soaringspot.com (see below)
 - Each year starts a new season.
 - Each pilot may submit any number of flights throughout the season.
-- **best 3 flights of the season** count toward the pilot's total score for the season.
+- **Best 3 flights of the season** count toward the pilot's total score for the season.
 - Scoring is **season-relative**, not fixed-scale:
   - The fastest handicapped speed of the season so far = 1,000 points. All other
     completed-task flights are scored as a percentage of that.
